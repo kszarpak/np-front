@@ -1,0 +1,84 @@
+pipeline {
+    agent {
+        label 'agent'
+    }
+    environment {
+        scannerHome = tool 'SonarQube'
+        PIP_BREAK_SYSTEM_PACKAGES = 1
+    }
+    options {
+      gitLabConnection('gitlab')
+      gitlabCommitStatus(name: 'jenkins')
+    }
+    triggers {
+        gitlab(triggerOnPush: true, triggerOnMergeRequest: true, branchFilterType: 'All')
+    }
+    stages {
+        stage('Get Code') {
+            steps {
+                checkout scm // Get some code from a GitHub repository
+            }
+        }
+        stage('Unit tests') {
+            steps {
+                gitlabCommitStatus(name: 'unit-tests') {
+                    sh "pip3 install -r requirements.txt"
+                    sh "python3 -m pytest --cov=. --cov-report xml:test-results/coverage.xml --junitxml=test-results/pytest-report.xml"
+                }
+            }
+        }
+        stage('Sonarqube analysis') {
+            steps {
+                gitlabCommitStatus(name: 'sonarqube') {
+                    withSonarQubeEnv('SonarQube') {
+                        sh "${scannerHome}/bin/sonar-scanner"
+                    }
+                }
+            }
+        }
+        stage('Build application image') {
+            steps {
+                gitlabCommitStatus(name: 'build-image') {
+                    script {
+                        // Prepare basic image for application
+                        dockerTag = "${env.BUILD_ID}.${env.GIT_COMMIT.take(7)}"
+                        applicationImage = docker.build("kornzysiek/frontend:$dockerTag",".")
+                    }
+                }
+            }
+        }
+        stage ('Pushing image to docker registry') {
+            steps {
+                gitlabCommitStatus(name: 'push-image') {
+                    script {
+                        docker.withRegistry("", "dockerhub") {
+                            applicationImage.push()
+                            applicationImage.push('latest')
+                        }
+                    }
+                }
+            }
+        }
+    }
+    post {
+        success {
+            withCredentials([string(credentialsId: 'gitlab-project-token', variable: 'GITLAB_TOKEN')]) {
+                sh """
+                    curl -X POST \
+                         -F token=$GITLAB_TOKEN \
+                         -F ref=main \
+                         -F "variables[FRONTEND_DOCKER_TAG]=${dockerTag}" \
+                         http://gitlab/api/v4/projects/1/trigger/pipeline
+                """
+            }
+        }
+        always {
+            junit testResults: "test-results/*.xml"
+            cleanWs()
+            updateGitlabCommitStatus name: 'build', state: currentBuild.resultIsBetterOrEqualTo('SUCCESS') ? 'success' : 'failed'
+        }
+    }
+}
+
+
+ 
