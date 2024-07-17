@@ -1,4 +1,4 @@
-@Library('your-shared-library@version') _
+@Library('shared-library') _
 
 // Define some custom stages to override or extend the YAML config
 def customStages = [
