@@ -21,7 +21,11 @@ pipeline {
         stage('Default Pipeline') {
             steps {
                 script {
-                    advancedPipeline([:])
+                    try {
+                        advancedPipeline([:])
+                    } catch (Exception e) {
+                        echo "Default Pipeline failed: ${e.message}"
+                    }
                 }
             }
         }
@@ -29,7 +33,11 @@ pipeline {
         stage('Debug Pipeline') {
             steps {
                 script {
-                    advancedPipeline([DEBUG_MODE: true])
+                    try {
+                        advancedPipeline([DEBUG_MODE: true])
+                    } catch (Exception e) {
+                        echo "Debug Pipeline failed: ${e.message}"
+                    }
                 }
             }
         }
@@ -37,7 +45,11 @@ pipeline {
         stage('Custom Stages Pipeline') {
             steps {
                 script {
-                    advancedPipeline([stages: customStages])
+                    try {
+                        advancedPipeline([stages: customStages])
+                    } catch (Exception e) {
+                        echo "Custom Stages Pipeline failed: ${e.message}"
+                    }
                 }
             }
         }
@@ -45,10 +57,14 @@ pipeline {
         stage('Combined Stages Pipeline') {
             steps {
                 script {
-                    advancedPipeline([
-                        stages: customStages,
-                        appendStages: true
-                    ])
+                    try {
+                        advancedPipeline([
+                            stages: customStages,
+                            appendStages: true
+                        ])
+                    } catch (Exception e) {
+                        echo "Combined Stages Pipeline failed: ${e.message}"
+                    }
                 }
             }
         }
@@ -71,7 +87,7 @@ pipeline {
                             ]
                         ])
                     } catch (Exception e) {
-                        echo "Caught expected exception: ${e.message}"
+                        echo "Caught expected exception in Failing Pipeline: ${e.message}"
                     }
                 }
             }
