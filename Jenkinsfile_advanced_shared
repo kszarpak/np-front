@@ -1,6 +1,5 @@
 @Library('shared-library') _
 
-// Define some custom stages to override or extend the YAML config
 def customStages = [
     CustomStage: [
         customStep1: [
@@ -15,50 +14,67 @@ def customStages = [
     ]
 ]
 
-// Pipeline with default configuration
-stage('Default Pipeline') {
-    advancedPipeline([:])
-}
+pipeline {
+    agent any
 
-// Pipeline with debug mode enabled
-stage('Debug Pipeline') {
-    advancedPipeline([
-        DEBUG_MODE: true
-    ])
-}
+    stages {
+        stage('Default Pipeline') {
+            steps {
+                script {
+                    advancedPipeline([:])
+                }
+            }
+        }
 
-// Pipeline with custom stages
-stage('Custom Stages Pipeline') {
-    advancedPipeline([
-        stages: customStages
-    ])
-}
+        stage('Debug Pipeline') {
+            steps {
+                script {
+                    advancedPipeline([DEBUG_MODE: true])
+                }
+            }
+        }
 
-// Pipeline with both YAML and custom stages
-stage('Combined Stages Pipeline') {
-    advancedPipeline([
-        stages: customStages,
-        appendStages: true  // This flag would need to be implemented in PipelineConfig
-    ])
-}
+        stage('Custom Stages Pipeline') {
+            steps {
+                script {
+                    advancedPipeline([stages: customStages])
+                }
+            }
+        }
 
-// Pipeline with a step configured to fail
-stage('Failing Pipeline') {
-    try {
-        advancedPipeline([
-            stages: [
-                FailingStage: [
-                    failingStep: [
-                        command: "echo 'This step will fail'",
-                        failPipeline: true,
-                        groovyScript: '''
-                            throw new Exception("Simulated failure")
-                        '''
-                    ]
-                ]
-            ]
-        ])
-    } catch (Exception e) {
-        echo "Caught expected exception: ${e.message}"
+        stage('Combined Stages Pipeline') {
+            steps {
+                script {
+                    advancedPipeline([
+                        stages: customStages,
+                        appendStages: true
+                    ])
+                }
+            }
+        }
+
+        stage('Failing Pipeline') {
+            steps {
+                script {
+                    try {
+                        advancedPipeline([
+                            stages: [
+                                FailingStage: [
+                                    failingStep: [
+                                        command: "echo 'This step will fail'",
+                                        failPipeline: true,
+                                        groovyScript: '''
+                                            throw new Exception("Simulated failure")
+                                        '''
+                                    ]
+                                ]
+                            ]
+                        ])
+                    } catch (Exception e) {
+                        echo "Caught expected exception: ${e.message}"
+                    }
+                }
+            }
+        }
     }
 }
