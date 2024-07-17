@@ -1,6 +1,7 @@
 @Library('shared-library') _
 import org.nprog.Logger
 
-def pipelineConfig = readYaml file: 'resources/pipeline_config.yaml'
-
-buildPipeline(pipelineConfig)
+node('agentl') {
+    def pipelineConfig = readYaml file: 'resources/pipeline_config.yaml'
+    buildPipeline(pipelineConfig)
+}
