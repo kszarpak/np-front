@@ -3,7 +3,7 @@ import org.nprog.Logger
 
 node('agent') {
     stage('Load Configuration') {
-        echo "Global constant: ${GLOBAL_CONSTANT}" 
+        echo "Global variable: ${globalVariable}" 
         def configText = libraryResource 'pipeline_config.yaml'
         def pipelineConfig = readYaml text: configText
         buildPipeline(pipelineConfig)
