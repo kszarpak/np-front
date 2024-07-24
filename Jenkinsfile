@@ -5,6 +5,7 @@ pipeline {
 
     environment {
         PIP_BREAK_SYSTEM_PACKAGES = 1
+        scannerHome = tool 'SonarQube'
     }
     
     stages {
@@ -21,6 +22,14 @@ pipeline {
         }
     }
     }
+
+    stage('Sonarqube analysis') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    sh "${scannerHome}/bin/sonar-scanner"
+                }
+            }
+        }
 
     post {
         always {
