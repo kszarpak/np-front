@@ -22,7 +22,7 @@ pipeline {
     }
 
     post {
-        alwaya {
+        always {
             junit 'test-results/*.xml'
         }
     }
