@@ -20,6 +20,7 @@ pipeline {
             sh "python3 -m pytest --cov=. --cov-report xml:test-results/coverage.xml --junitxml=test-results/pytest-repoert.xml"
         }
     }
+    }
 
     post {
         always {
