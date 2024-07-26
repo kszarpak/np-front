@@ -54,6 +54,9 @@ pipeline {
     }
 
     post {
+        success {
+            build wait: false, job: 'selenium', parameters: [string(name: 'frontendDockerTag', value: dockerTag)]
+        }    
         always {
           junit 'test-results/*.xml'
       }
