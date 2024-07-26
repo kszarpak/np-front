@@ -1,3 +1,5 @@
+@Library('shared-library') _
+
 pipeline {
     agent {
         label 'agent'
@@ -18,15 +20,13 @@ pipeline {
 
     stage('Run test') {
         steps {
-          sh "pip3 install -r requirements.txt"
-          sh "python3 -m pytest --cov=. --cov-report xml:test-results/coverage.xml --junitxml=test-results/pytest-report.xml"
+          runTests()
         }
       }
 
         stage('Sonarqube analysis') {
             steps {
-                withSonarQubeEnv('SonarQube') {
-                    sh "${scannerHome}/bin/sonar-scanner"
+                runSonarAnalysis(scannerHome)
                 }
             }
         }
