@@ -4,25 +4,26 @@ pipeline {
     }
 
     environment {
-        PIP_BREAK_SYSTEM_PACKAGES = 1
-        scannerHome = tool 'SonarQube'
+      PIP_BREAK_SYSTEM_PACKAGES = "1"
+      scannerHome = tool 'SonarQube'
     }
-    
+
     stages {
-      stage('Get code') {
+      stage('Get Code') {
         steps {
-         checkout scm 
+          checkout scm
+        }
+      }
+    
+
+    stage('Run test') {
+        steps {
+          sh "pip3 install -r requirements.txt"
+          sh "python3 -m pytest --cov=. --cov-report xml:test-results/coverage.xml --junitxml=test-results/pytest-report.xml"
         }
       }
 
-    stage ('Run test') {
-        steps {
-            sh "pip3 install -r requirements.txt"
-            sh "python3 -m pytest --cov=. --cov-report xml:test-results/coverage.xml --junitxml=test-results/pytest-repoert.xml"
-        }
-    }
-
-    stage('Sonarqube analysis') {
+        stage('Sonarqube analysis') {
             steps {
                 withSonarQubeEnv('SonarQube') {
                     sh "${scannerHome}/bin/sonar-scanner"
@@ -30,14 +31,12 @@ pipeline {
             }
         }
 
-    
-
-    stage('Build application image') {
+        stage('Build application image') {
             steps {
                 script {
                   // Prepare basic image for application
                   dockerTag = "${env.BUILD_ID}.${env.GIT_COMMIT.take(7)}"
-                  applicationImage = docker.build("kszarpak/frontend:$dockerTag",".")
+                  applicationImage = docker.build("kornzysiek/frontend:$dockerTag",".")
                 }
             }
         }
@@ -50,12 +49,14 @@ pipeline {
                     }
                 }
             }
-	}
+        }
     
+    }
+
     post {
         always {
-            junit 'test-results/*.xml'
-        }
+          junit 'test-results/*.xml'
+      }
     }
+    
 }
-
