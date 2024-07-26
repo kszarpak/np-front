@@ -11,26 +11,25 @@ pipeline {
     }
 
     stages {
-      stage('Get Code') {
-        steps {
-          checkout scm
+        stage('Get Code') {
+            steps {
+              checkout scm
+            }
         }
-      }
     
 
-    stage('Run test') {
-        steps {
-          runTests()
+        stage('Run test') {
+            steps {
+              runTests()
+            }
         }
-      }
 
         stage('Sonarqube analysis') {
             steps {
                 runSonarAnalysis(scannerHome)
                 }
             }
-        }
-
+        
         stage('Build application image') {
             steps {
                 script {
@@ -40,6 +39,7 @@ pipeline {
                 }
             }
         }
+        
         stage ('Pushing image to docker registry') {
             steps {
                 script {
@@ -61,5 +61,6 @@ pipeline {
           junit 'test-results/*.xml'
       }
     }
+}
     
 
