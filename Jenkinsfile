@@ -36,7 +36,7 @@ pipeline {
                 script {
                   // Prepare basic image for application
                   dockerTag = "${env.BUILD_ID}.${env.GIT_COMMIT.take(7)}"
-                  applicationImage = docker.build("kornzysiek/frontend:$dockerTag",".")
+                  applicationImage = docker.build("kszarpak/frontend:$dockerTag",".")
                 }
             }
         }
