@@ -30,7 +30,7 @@ pipeline {
             }
         }
 
-    }
+    
 
     stage('Build application image') {
             steps {
@@ -50,7 +50,7 @@ pipeline {
                     }
                 }
             }
-		}
+	}
     
     post {
         always {
